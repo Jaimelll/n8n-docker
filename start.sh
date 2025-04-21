@@ -1,21 +1,18 @@
 #!/bin/bash
 
-echo "🟢 Levantando servicios..."
+# Detener y eliminar todo
+docker-compose down -v
 
+# Iniciar servicios
 docker-compose up -d
 
-sleep 5
+# Esperar a que n8n esté listo
+echo "⏳ Esperando a que n8n inicie..."
+while ! curl -s http://localhost:5678/healthz >/dev/null; do
+  sleep 5
+done
 
-NGROK_URL=$(curl --silent http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
+# Obtener URL de ngrok
+NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https").public_url')
 
-if [ -z "$NGROK_URL" ]; then
-  echo "❌ No se pudo obtener la URL pública de ngrok."
-  exit 1
-fi
-
-echo "🌐 URL pública de ngrok: $NGROK_URL"
-
-sed -i "s|^NGROK_URL=.*|NGROK_URL=${NGROK_URL}|" .env
-
-
-docker-compose restart n8n
+echo "✅ URL definitiva: $NGROK_URL"

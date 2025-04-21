@@ -3,28 +3,33 @@ services:
     image: n8nio/n8n
     ports:
       - "5678:5678"
-    env_file:
-      - .env
     environment:
-      - WEBHOOK_TUNNEL_URL=${NGROK_URL}
-      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
-      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
-      - N8N_RUNNERS_ENABLED=true
+      - N8N_HOST=0.0.0.0
+      - N8N_PROTOCOL=https
+      - N8N_PUBLIC_API_WEBHOOK_URL=${NGROK_URL}
+      - N8N_BASIC_AUTH_ACTIVE=false
     volumes:
       - n8n_data:/home/node/.n8n
-    restart: always
+    networks:
+      - n8n_network
+    restart: unless-stopped
 
   ngrok:
     image: ngrok/ngrok:latest
-    command: http 443:n8n:5678
+    command: http n8n:5678 --host-header=rewrite --log=stdout
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
     ports:
       - "4040:4040"
-    environment:
-      - NGROK_AUTHTOKEN=1qP8F5zz0DZdD5aW2S2GVacf7Ik_2npKsdseLD2NCwfg29f9D
     depends_on:
       - n8n
-    restart: always
+    networks:
+      - n8n_network
+    restart: unless-stopped
 
 volumes:
   n8n_data:
+
+networks:
+  n8n_network:
+    driver: bridge
