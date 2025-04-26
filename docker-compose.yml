@@ -1,18 +1,22 @@
+
+
 services:
   n8n:
     image: n8nio/n8n
     ports:
       - "5678:5678"
     environment:
-      - N8N_HOST=0.0.0.0
-      - N8N_PROTOCOL=https
-      - N8N_PUBLIC_API_WEBHOOK_URL=${NGROK_URL}
       - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_HOST=localhost
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL_PLACEHOLDER
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
       - n8n_network
     restart: unless-stopped
+    depends_on:
+      - ngrok
 
   ngrok:
     image: ngrok/ngrok:latest
@@ -21,8 +25,6 @@ services:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
     ports:
       - "4040:4040"
-    depends_on:
-      - n8n
     networks:
       - n8n_network
     restart: unless-stopped
