@@ -1,27 +1,28 @@
 #!/bin/bash
 
-# Detener y eliminar todo
-docker-compose down -v
+# Cargar variables desde .env para usarlas en el script (si es necesario)
+set -a # automatically export all variables
+source .env
+set +a
 
-# Iniciar solo ngrok primero (no n8n)
-docker-compose up -d ngrok
+echo "🛑 Deteniendo contenedores existentes..."
+# docker-compose down -v # Descomenta -v para eliminar volúmenes también
+docker-compose down
 
-# Esperar a que ngrok inicie
-echo "⏳ Esperando a que ngrok inicie..."
-until curl -s http://localhost:4040/api/tunnels >/dev/null; do
-  sleep 2
+echo "🚀 Iniciando servicios n8n y ngrok..."
+docker-compose up -d
+
+echo "⏳ Esperando a que n8n inicie (http://localhost:5678)..."
+while ! curl -s --fail http://localhost:5678/healthz > /dev/null; do
+  echo -n "."
+  sleep 5
 done
+echo "" # Nueva línea
 
-# Obtener la URL pública de ngrok
-NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
+echo "⏳ Esperando a que ngrok inicie y conecte..."
+sleep 5 # Darle tiempo a ngrok
 
-echo "✅ URL pública obtenida de ngrok: $NGROK_URL"
-
-# Exportar la URL para docker-compose
-export WEBHOOK_URL_PLACEHOLDER=N8N_PUBLIC_API_WEBHOOK_URL=$NGROK_URL
-
-# Ahora iniciar n8n pasando la URL correcta
-docker-compose up -d n8n
-
-# Mostrar URL final
-echo "🌐 n8n Webhook URL: $NGROK_URL"
+echo "✅ ¡Configuración completada!"
+echo "   ➡️ n8n debería estar accesible localmente en: http://localhost:5678"
+echo "   ➡️ Tu URL pública estática (para webhooks) es: https://${N8N_STATIC_DOMAIN}/"
+echo "   ➡️ Puedes ver el estado de ngrok en: http://localhost:4040"

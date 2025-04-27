@@ -1,33 +1,49 @@
-
+# docker-compose.yml
 
 services:
   n8n:
     image: n8nio/n8n
+    restart: unless-stopped
     ports:
-      - "5678:5678"
+      - "5678:5678" # Exposición interna/local del puerto de n8n
     environment:
-      - N8N_BASIC_AUTH_ACTIVE=false
-      - N8N_HOST=localhost
+      # ***** LA VARIABLE CLAVE PARA LA URL PÚBLICA DE WEBHOOKS *****
+      # Asegúrate que N8N_STATIC_DOMAIN esté definido en tu .env
+      - WEBHOOK_URL=https://tolerant-arguably-titmouse.ngrok-free.app/
+
+      # Indica a n8n que externamente se accede por HTTPS (importante para Telegram)
       - N8N_PROTOCOL=https
-      - WEBHOOK_URL_PLACEHOLDER
+
+      # Configuración interna de escucha (no afecta la URL pública)
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+
+      # Carga otras configuraciones desde .env si existen
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      # Puedes añadir otras variables como timezone si lo necesitas
+      # - GENERIC_TIMEZONE=America/Lima
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
       - n8n_network
-    restart: unless-stopped
-    depends_on:
-      - ngrok
+    # Carga las variables definidas en el archivo .env
+    env_file:
+      - .env
 
   ngrok:
     image: ngrok/ngrok:latest
-    command: http n8n:5678 --host-header=rewrite --log=stdout
-    environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    restart: unless-stopped
     ports:
-      - "4040:4040"
+      - "4040:4040" # Puerto para la interfaz web/API local de ngrok
+    # Comando para iniciar el túnel usando el dominio estático de .env
+    command: http n8n:5678 --domain=${N8N_STATIC_DOMAIN} --host-header=rewrite --log=stdout
+    depends_on:
+      - n8n
     networks:
       - n8n_network
-    restart: unless-stopped
+    # Carga las variables definidas en el archivo .env (NGROK_AUTHTOKEN)
+    env_file:
+      - .env
 
 volumes:
   n8n_data:
