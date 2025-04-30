@@ -9,7 +9,7 @@ services:
     environment:
       # ***** LA VARIABLE CLAVE PARA LA URL PÚBLICA DE WEBHOOKS *****
       # Asegúrate que N8N_STATIC_DOMAIN esté definido en tu .env
-      - WEBHOOK_URL=https://tolerant-arguably-titmouse.ngrok-free.app/
+      - WEBHOOK_URL=${URL_NGROK}
 
       # Indica a n8n que externamente se accede por HTTPS (importante para Telegram)
       - N8N_PROTOCOL=https
