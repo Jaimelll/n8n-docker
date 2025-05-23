@@ -1,5 +1,0 @@
-# .env
-NGROK_AUTHTOKEN=1qP8F5zz0DZdD5aW2S2GVacf7Ik_2npKsdseLD2NCwfg29f9D
-N8N_STATIC_DOMAIN=tolerant-arguably-titmouse.ngrok-free.app
-N8N_BASIC_AUTH_ACTIVE=false
-URL_NGROK=https://tolerant-arguably-titmouse.ngrok-free.app/

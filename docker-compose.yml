@@ -11,7 +11,7 @@ services:
       - N8N_PORT=5678
       - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
     volumes:
-      - n8n_data:/home/node/.n8n
+      - ./n8n_local_data:/home/node/.n8n
     networks:
       - n8n_network
     env_file:
@@ -30,10 +30,24 @@ services:
     env_file:
       - .env
 
+  postgres:
+    image: ankane/pgvector:latest
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: tu_password_seguro
+      POSTGRES_DB: n8n_embeddings
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - n8n_network
+
 volumes:
-  n8n_data:
+  postgres_data:
 
 networks:
   n8n_network:
-    external: true
-    name: app-n8n-network
+    name: n8n-network
+    driver: bridge
