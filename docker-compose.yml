@@ -11,7 +11,7 @@ services:
       - N8N_PORT=5678
       - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
     volumes:
-      - ./n8n_local_data:/home/node/.n8n
+      - n8n_data:/home/node/.n8n  # ¡Cambiado a volumen nombrado!
     networks:
       - n8n_network
     env_file:
@@ -46,6 +46,7 @@ services:
 
 volumes:
   postgres_data:
+  n8n_data:  # Nuevo volumen nombrado para n8n
 
 networks:
   n8n_network:
