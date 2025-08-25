@@ -1,0 +1,39 @@
+services:
+  n8n:
+    image: n8nio/n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - WEBHOOK_URL=${URL_NGROK}
+      - N8N_PROTOCOL=https
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - n8n_network
+    env_file:
+      - .env
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    command: http n8n:5678 --domain=${N8N_STATIC_DOMAIN} --host-header=rewrite --log=stdout
+    depends_on:
+      - n8n
+    networks:
+      - n8n_network
+    env_file:
+      - .env
+
+volumes:
+  n8n_data:
+
+networks:
+  n8n_network:
+    external: true
+    name: app-n8n-network
