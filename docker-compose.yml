@@ -14,6 +14,7 @@ services:
       - n8n_data:/home/node/.n8n
     networks:
       - n8n_network
+      - compras1_default
     env_file:
       - .env
 
@@ -37,3 +38,5 @@ networks:
   n8n_network:
     external: true
     name: app-n8n-network
+  compras1_default:
+    external: true

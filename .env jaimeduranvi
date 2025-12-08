@@ -1,0 +1,12 @@
+NGROK_AUTHTOKEN=34w9FPEuiYXlK5S857z9BYpOWg6_6DrrWNW3iHojLbJBmJTvv
+N8N_STATIC_DOMAIN=cullen-synergistic-frederick.ngrok-free.dev
+N8N_BASIC_AUTH_ACTIVE=false
+URL_NGROK=https://cullen-synergistic-frederick.ngrok-free.dev/
+N8N_SECURE_COOKIE=false
+N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+N8N_BASIC_AUTH_USER= jduran0102@hotmail.com
+N8N_BASIC_AUTH_PASSWORD= Vanessa1
+
+
+
+#N8N_BASIC_AUTH_ACTIVE=false  original ohora e true si n8n pide o no contraseña
