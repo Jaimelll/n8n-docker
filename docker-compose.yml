@@ -1,6 +1,6 @@
 services:
   n8n:
-    image: n8nio/n8n
+    image: n8nio/n8n:latest
     restart: unless-stopped
     ports:
       - "5678:5678"
@@ -29,6 +29,19 @@ services:
       - n8n_network
     env_file:
       - .env
+
+  # NUEVO SERVICIO: MCP para Antigravity
+  n8n-mcp:
+    image: node:18-slim
+    command: >
+      sh -c "npm install -g n8n-mcp && n8n-mcp"
+    environment:
+      - N8N_API_URL=http://n8n:5678
+      - N8N_API_KEY=TU_API_KEY_AQUI
+    networks:
+      - n8n_network
+    depends_on:
+      - n8n
 
 volumes:
   n8n_data:
