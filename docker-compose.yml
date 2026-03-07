@@ -30,23 +30,26 @@ services:
     env_file:
       - .env
 
-  # NUEVO SERVICIO: MCP para Antigravity
   n8n-mcp:
     image: node:18-slim
-    command: >
-      sh -c "npm install -g n8n-mcp && n8n-mcp"
+    command: sh -c "npm install -g n8n-mcp && n8n-mcp"
     environment:
       - N8N_API_URL=http://n8n:5678
-      - N8N_API_KEY=TU_API_KEY_AQUI
-    networks:
-      - n8n_network
+      - N8N_API_KEY=${N8N_API_KEY}
     depends_on:
       - n8n
+    networks:
+      - n8n_network
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    networks:
+      - n8n_network
 
 volumes:
   n8n_data:
 
 networks:
   n8n_network:
-    external: true
-    name: app-n8n-network
+    driver: bridge
