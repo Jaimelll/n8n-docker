@@ -1,6 +1,7 @@
 services:
   n8n:
     build: .
+    user: "root"
     container_name: n8n
     restart: unless-stopped
     ports:
@@ -26,7 +27,8 @@ services:
       - N8N_MCP_URL=http://n8n-mcp:3001
 
     volumes:
-      - n8n_data:/home/node/.n8n
+      # 👇 AQUÍ ESTÁ EL CAMBIO: /root/.n8n para recuperar tus flujos
+      - n8n_data:/root/.n8n
       # Mapeamos la carpeta local ./data a la ruta interna /data donde Tesseract leerá
       - ./data:/data
 
