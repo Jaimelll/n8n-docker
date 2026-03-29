@@ -1,6 +1,7 @@
 services:
   n8n:
-    image: n8nio/n8n:latest
+    build: .
+    container_name: n8n
     restart: unless-stopped
     ports:
       - "5678:5678"
@@ -10,42 +11,69 @@ services:
       - N8N_HOST=0.0.0.0
       - N8N_PORT=5678
       - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      
+      # 🔥 OCR / archivos grandes
+      - EXECUTIONS_PROCESS=main
+      - NODE_FUNCTION_ALLOW_EXTERNAL=*
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_BINARY_DATA_STORAGE_PATH=/data/binary
+      
+      # 🔥 HABILITAR NODO EXECUTE COMMAND (Oculto en v2.0+)
+      - NODES_EXCLUDE=[]
+            
+      # 🔥 MCP
+      - N8N_MCP_ENABLED=true
+      - N8N_MCP_URL=http://n8n-mcp:3001
+
     volumes:
       - n8n_data:/home/node/.n8n
+      # Mapeamos la carpeta local ./data a la ruta interna /data donde Tesseract leerá
+      - ./data:/data
+
+    depends_on:
+      - gotenberg
     networks:
       - n8n_network
     env_file:
       - .env
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    restart: unless-stopped
-    ports:
-      - "4040:4040"
-    command: http n8n:5678 --domain=${N8N_STATIC_DOMAIN} --host-header=rewrite --log=stdout
-    depends_on:
-      - n8n
-    networks:
-      - n8n_network
-    env_file:
-      - .env
-
-  n8n-mcp:
-    image: node:18-slim
-    command: sh -c "npm install -g n8n-mcp && n8n-mcp"
-    environment:
-      - N8N_API_URL=http://n8n:5678
-      - N8N_API_KEY=${N8N_API_KEY}
-    depends_on:
-      - n8n
-    networks:
-      - n8n_network
-
+  # 🔥 Gotenberg (Motor para generar tus PDFs finales)
   gotenberg:
     image: gotenberg/gotenberg:8
+    container_name: gotenberg
     restart: unless-stopped
+    command:
+      - "gotenberg"
+      - "--api-timeout=300s"
+    ports:
+      - "3000:3000"
     networks:
       - n8n_network
+
+  # 🔥 MCP SOLO LOCAL
+  n8n-mcp:
+    image: ghcr.io/n8n-io/n8n-mcp:latest
+    container_name: n8n-mcp
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    networks:
+      - n8n_network
+    profiles:
+      - mcp   
+
+  # 🌐 NGROK
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    restart: unless-stopped
+    command: http n8n:5678 --domain=${N8N_STATIC_DOMAIN} --host-header=rewrite
+    depends_on:
+      - n8n
+    networks:
+      - n8n_network
+    env_file:
+      - .env
 
 volumes:
   n8n_data:
