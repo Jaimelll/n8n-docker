@@ -1,3 +1,6 @@
 .env
-n8n_local_data/
+data/*
+!data/.gitkeep
+data/binary/*
+!data/binary/.gitkeep
 backups/
