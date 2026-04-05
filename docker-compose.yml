@@ -54,15 +54,19 @@ services:
 
   # 🔥 MCP SOLO LOCAL
   n8n-mcp:
-    image: ghcr.io/n8n-io/n8n-mcp:latest
+    image: ghcr.io/czlonkowski/n8n-mcp:latest
     container_name: n8n-mcp
     restart: unless-stopped
+    environment:
+      - MCP_MODE=http
+      - PORT=3001   
+      - AUTH_TOKEN=${MCP_AUTH_TOKEN} 
     ports:
       - "3001:3001"
     networks:
       - n8n_network
     profiles:
-      - mcp   
+      - mcp
 
   # 🌐 NGROK
   ngrok:
