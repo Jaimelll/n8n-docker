@@ -18,19 +18,15 @@ services:
       - NODE_FUNCTION_ALLOW_EXTERNAL=*
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_BINARY_DATA_STORAGE_PATH=/data/binary
-      
-      # 🔥 HABILITAR NODO EXECUTE COMMAND (Oculto en v2.0+)
       - NODES_EXCLUDE=[]
-            
-      # 🔥 MCP
-      - N8N_MCP_ENABLED=true
-      - N8N_MCP_URL=http://n8n-mcp:3001
+      
+      # 🔥 MCP (Ahora es dinámico, por defecto apagado)
+      - N8N_MCP_ENABLED=${N8N_MCP_ENABLED:-false}
+      - N8N_MCP_URL=${N8N_MCP_URL:-}
 
     volumes:
-      # 👇 AQUÍ ESTÁ EL CAMBIO: /root/.n8n para recuperar tus flujos
-      - n8n_data:/root/.n8n
-      # Mapeamos la carpeta local ./data a la ruta interna /data donde Tesseract leerá
-      - ./data:/data
+      - ${N8N_DATA_PATH:-./n8n_data}:/root/.n8n
+      - ${N8N_BINARY_PATH:-./data}:/data
 
     depends_on:
       - gotenberg
@@ -39,7 +35,6 @@ services:
     env_file:
       - .env
 
-  # 🔥 Gotenberg (Motor para generar tus PDFs finales)
   gotenberg:
     image: gotenberg/gotenberg:8
     container_name: gotenberg
@@ -52,7 +47,7 @@ services:
     networks:
       - n8n_network
 
-  # 🔥 MCP SOLO LOCAL
+  # 🔥 MCP (Se queda en el código, pero solo arranca si el .env lo pide)
   n8n-mcp:
     image: ghcr.io/czlonkowski/n8n-mcp:latest
     container_name: n8n-mcp
@@ -68,7 +63,6 @@ services:
     profiles:
       - mcp
 
-  # 🌐 NGROK
   ngrok:
     image: ngrok/ngrok:latest
     container_name: ngrok
