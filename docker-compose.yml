@@ -4,6 +4,12 @@ services:
     user: "root"
     container_name: n8n
     restart: unless-stopped
+    # 🔥 Límites de recursos: Evita que n8n congele todo el VPS
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'      # Máximo 2 núcleos (tienes 4 al 100% ahora)
+          memory: 3.5G     # Te deja 4.5G libres para el sistema y Next.js
     ports:
       - "5678:5678"
     environment:
@@ -13,20 +19,26 @@ services:
       - N8N_PORT=5678
       - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
       
-      # 🔥 OCR / archivos grandes
+      # 🔥 OCR / Archivos grandes: Optimización Pro
       - EXECUTIONS_PROCESS=main
       - NODE_FUNCTION_ALLOW_EXTERNAL=*
+      # Esto es vital para Tesseract: guarda fragmentos en disco, no en RAM
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_BINARY_DATA_STORAGE_PATH=/data/binary
+      
+      # 🔥 Prevención de cuelgues por Node.js
+      - NODE_OPTIONS=--max-old-space-size=3072
+      
       - NODES_EXCLUDE=[]
       
-      # 🔥 MCP (Ahora es dinámico, por defecto apagado)
+      # 🔥 MCP
       - N8N_MCP_ENABLED=${N8N_MCP_ENABLED:-false}
       - N8N_MCP_URL=${N8N_MCP_URL:-}
 
     volumes:
       - ${N8N_DATA_PATH:-./n8n_data}:/root/.n8n
       - ${N8N_BINARY_PATH:-./data}:/data
+      # Recomendación: Si puedes, mapea ./data al volumen de 15GB de Hetzner
 
     depends_on:
       - gotenberg
@@ -39,6 +51,11 @@ services:
     image: gotenberg/gotenberg:8
     container_name: gotenberg
     restart: unless-stopped
+    # 🔥 Limitar Gotenberg para que no robe RAM a n8n
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     command:
       - "gotenberg"
       - "--api-timeout=300s"
@@ -47,7 +64,6 @@ services:
     networks:
       - n8n_network
 
-  # 🔥 MCP (Se queda en el código, pero solo arranca si el .env lo pide)
   n8n-mcp:
     image: ghcr.io/czlonkowski/n8n-mcp:latest
     container_name: n8n-mcp
