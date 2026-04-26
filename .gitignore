@@ -1,6 +1,23 @@
+# 🔒 Archivos de Entorno y Secretos
 .env
-data/*
-!data/.gitkeep
-data/binary/*
-!data/binary/.gitkeep
+
+# 📂 Base de datos y configuración de n8n local
+n8n_data/
 backups/
+
+# 📄 Archivos temporales de Tesseract (OCR) y binarios
+data/
+*.png
+*.pdf
+*.tab.png
+tmp_*/
+/tmp_*/
+/data/tmp_*/
+/data/p_*.pdf
+
+# 🧠 MCP (si activas el perfil)
+n8n-mcp/
+
+# 🐳 Docker logs
+*.log
+*.pid
